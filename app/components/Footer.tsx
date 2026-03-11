@@ -3,7 +3,7 @@ import Link from 'next/link';
 import AppLogo from './ui/AppLogo';
 
 const footerLinks = [
-  { label: 'Home', href: '/homepage' },
+  { label: 'Home', href: '/' },
   { label: 'Products', href: '/products' },
   { label: 'Contact', href: '/contact' },
   { label: 'Privacy', href: '#' },
@@ -18,7 +18,7 @@ export default function Footer() {
 
           {/* Brand + Contact */}
           <div className="flex flex-col items-center sm:items-start gap-3">
-            <Link href="/homepage" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <AppLogo size={32} />
               <span className="font-display font-semibold text-lg text-primary tracking-tight">
                 HimalayaChasmaGhar
@@ -98,11 +98,3 @@ export default function Footer() {
     </footer>
   );
 }
-
-
-
-
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://github.com/Sheikh-369/Himala-Chasma-Client.git
-git push -u origin main

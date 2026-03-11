@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import AppLogo from './ui/AppLogo';
 
 const navLinks = [
-  { label: 'Home', href: '/homepage' },
+  { label: 'Home', href: '/' },
   { label: 'Products', href: '/products' },
   { label: 'Contact', href: '/contact' },
 ];
@@ -32,7 +32,7 @@ export default function Header() {
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-background/95 backdrop-blur-xl border-b border-accent/30 shadow-card' : 'bg-transparent'}`}>
         <div className="max-w-8xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
-            <Link href="/homepage" className="flex items-center gap-2.5 group">
+            <Link href="/" className="flex items-center gap-2.5 group">
               <AppLogo size={36} />
               <span className="font-display font-semibold text-xl text-primary tracking-tight hidden sm:block">
                 HimalayaChasmaGhar
