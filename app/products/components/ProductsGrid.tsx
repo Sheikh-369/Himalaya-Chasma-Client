@@ -165,10 +165,10 @@ export default function ProductsGrid() {
           {filtered.map((product, i) =>
           <div
             key={product.id}
-            className={`reveal reveal-delay-${i % 4 + 1} product-card bg-white rounded-3xl overflow-hidden border border-accent/20 shadow-card flex flex-col`}>
+            className={`reveal reveal-delay-${i % 4 + 1} product-card bg-white rounded-3xl overflow-hidden border border-accent/20 shadow-card flex flex-col group`}>
             
               {/* Image */}
-              <div className="relative aspect-square bg-accent/10 overflow-hidden">
+              <Link href={`/products/${product.id}`} className="relative aspect-square bg-accent/10 overflow-hidden block">
                 <AppImage
                 src={product.image}
                 alt={product.alt}
@@ -191,12 +191,12 @@ export default function ProductsGrid() {
                 <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white shadow-sm">
                   <AppIcon name="HeartIcon" size={14} className="text-primary" />
                 </button>
-              </div>
+              </Link>
 
               {/* Info */}
               <div className="p-4 flex flex-col flex-1">
                 <p className="text-muted text-xs mb-1">{product.brand}</p>
-                <p className="text-primary font-semibold text-sm mb-1 font-display">{product.name}</p>
+                <Link href={`/products/${product.id}`} className="text-primary font-semibold text-sm mb-1 font-display hover:text-secondary transition-colors">{product.name}</Link>
 
                 {/* Rating */}
                 <div className="flex items-center gap-1.5 mb-3">
@@ -223,13 +223,20 @@ export default function ProductsGrid() {
                 </div>
 
                 {/* CTA */}
-                <Link
-                href="/contact"
-                className="mt-auto flex items-center justify-center gap-2 bg-primary text-white text-xs font-semibold py-2.5 rounded-full hover:bg-dark-card transition-colors">
-                
-                  Inquire / Order
-                  <AppIcon name="ArrowRightIcon" size={12} className="text-white" />
-                </Link>
+                <div className="mt-auto flex gap-2">
+                  <Link
+                  href={`/products/${product.id}`}
+                  className="flex-1 flex items-center justify-center gap-1.5 border border-primary text-primary text-xs font-semibold py-2.5 rounded-full hover:bg-primary hover:text-white transition-colors">
+                    View Details
+                  </Link>
+                  <Link
+                  href="/contact"
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-primary text-white text-xs font-semibold py-2.5 rounded-full hover:bg-dark-card transition-colors">
+                  
+                    Inquire
+                    <AppIcon name="ArrowRightIcon" size={12} className="text-white" />
+                  </Link>
+                </div>
               </div>
             </div>
           )}

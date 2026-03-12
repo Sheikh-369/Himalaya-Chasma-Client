@@ -1,0 +1,267 @@
+'use client';
+
+import React, { useEffect, useRef } from 'react';
+import Link from 'next/link';
+import AppIcon from '@/app/components/ui/AppIcon';
+import AppImage from '@/app/components/ui/AppImage';
+
+type Category = 'All' | 'Sunglasses' | 'Prescription' | 'Designer';
+
+interface Product {
+  id: number;
+  name: string;
+  brand: string;
+  category: Category;
+  price: string;
+  originalPrice?: string;
+  badge?: string;
+  image: string;
+  alt: string;
+  rating: number;
+  reviews: number;
+  description: string;
+  features: string[];
+  frameDetails: { label: string; value: string }[];
+}
+
+interface ProductDetailProps {
+  product: Product;
+  relatedProducts: Product[];
+}
+
+export default function ProductDetail({ product, relatedProducts }: ProductDetailProps) {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add('visible');
+        });
+      },
+      { threshold: 0.08 }
+    );
+    sectionRef.current?.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section ref={sectionRef} className="pt-10 pb-24 lg:pb-32">
+      <div className="max-w-8xl mx-auto px-6 lg:px-8">
+
+        {/* Breadcrumb */}
+        <nav className="reveal flex items-center gap-2 text-sm text-muted mb-10">
+          <Link href="/" className="hover:text-secondary transition-colors">Home</Link>
+          <AppIcon name="ChevronRightIcon" size={14} className="text-accent" />
+          <Link href="/products" className="hover:text-secondary transition-colors">Products</Link>
+          <AppIcon name="ChevronRightIcon" size={14} className="text-accent" />
+          <span className="text-primary font-medium">{product.name}</span>
+        </nav>
+
+        {/* Main Product Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 mb-20">
+
+          {/* Image */}
+          <div className="reveal">
+            <div className="relative aspect-square rounded-3xl overflow-hidden bg-accent/10 border border-accent/20 shadow-card">
+              <AppImage
+                src={product.image}
+                alt={product.alt}
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+              {product.badge && (
+                <span
+                  className={`absolute top-5 left-5 text-sm font-bold px-3 py-1.5 rounded-full ${
+                    product.badge === 'Sale' ?'bg-red-500 text-white'
+                      : product.badge === 'New' ?'bg-primary text-white' :'bg-secondary text-primary'
+                  }`}
+                >
+                  {product.badge}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Info */}
+          <div className="reveal reveal-delay-2 flex flex-col">
+            {/* Brand & Category */}
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-secondary text-sm font-semibold uppercase tracking-widest">
+                {product.brand}
+              </span>
+              <span className="w-1 h-1 rounded-full bg-accent" />
+              <span className="text-muted text-sm">{product.category}</span>
+            </div>
+
+            {/* Name */}
+            <h1 className="font-display text-4xl lg:text-5xl text-primary font-semibold leading-tight mb-4">
+              {product.name}
+            </h1>
+
+            {/* Rating */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex gap-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <AppIcon
+                    key={i}
+                    name="StarIcon"
+                    variant={i < product.rating ? 'solid' : 'outline'}
+                    size={16}
+                    className={i < product.rating ? 'text-secondary' : 'text-accent'}
+                  />
+                ))}
+              </div>
+              <span className="text-muted text-sm">
+                {product.rating}.0 · {product.reviews} reviews
+              </span>
+            </div>
+
+            {/* Price */}
+            <div className="flex items-baseline gap-3 mb-6">
+              <span className="font-display text-4xl text-primary font-semibold">
+                {product.price}
+              </span>
+              {product.originalPrice && (
+                <span className="text-muted text-xl line-through">{product.originalPrice}</span>
+              )}
+              {product.originalPrice && (
+                <span className="text-red-500 text-sm font-semibold bg-red-50 px-2 py-0.5 rounded-full">
+                  Save{' '}
+                  {Math.round(
+                    ((parseInt(product.originalPrice.replace('$', '')) -
+                      parseInt(product.price.replace('$', ''))) /
+                      parseInt(product.originalPrice.replace('$', ''))) *
+                      100
+                  )}
+                  %
+                </span>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="w-full h-px bg-accent/30 mb-6" />
+
+            {/* Description */}
+            <p className="text-muted leading-relaxed mb-8">{product.description}</p>
+
+            {/* Features */}
+            <div className="mb-8">
+              <h3 className="text-primary font-semibold text-sm uppercase tracking-wider mb-4">
+                Key Features
+              </h3>
+              <ul className="space-y-2.5">
+                {product.features.map((feature, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-muted">
+                    <span className="mt-0.5 w-5 h-5 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                      <AppIcon name="CheckIcon" size={11} className="text-secondary" />
+                    </span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 mt-auto">
+              <Link
+                href={`/products/${product.id}/order`}
+                className="flex-1 flex items-center justify-center gap-2 bg-secondary text-primary font-semibold py-4 rounded-full hover:bg-[#D4B05A] transition-colors shadow-gold"
+              >
+                Order Now
+                <AppIcon name="ShoppingBagIcon" size={16} className="text-primary" />
+              </Link>
+              <Link
+                href="/contact"
+                className="flex-1 flex items-center justify-center gap-2 border-2 border-primary text-primary font-semibold py-4 rounded-full hover:bg-primary hover:text-white transition-colors"
+              >
+                Book Appointment
+                <AppIcon name="CalendarIcon" size={16} />
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Frame Details Table */}
+        <div className="reveal mb-20">
+          <h2 className="font-display text-2xl lg:text-3xl text-primary font-semibold mb-8">
+            Frame Specifications
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {product.frameDetails.map((detail, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-2xl border border-accent/20 p-5 shadow-card"
+              >
+                <p className="text-muted text-xs uppercase tracking-wider mb-1">{detail.label}</p>
+                <p className="text-primary font-semibold text-sm">{detail.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <div className="reveal">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="font-display text-2xl lg:text-3xl text-primary font-semibold">
+                You May Also Like
+              </h2>
+              <Link
+                href="/products"
+                className="text-secondary text-sm font-semibold flex items-center gap-1.5 hover:gap-2.5 transition-all"
+              >
+                View All
+                <AppIcon name="ArrowRightIcon" size={14} className="text-secondary" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {relatedProducts.map((related) => (
+                <Link
+                  key={related.id}
+                  href={`/products/${related.id}`}
+                  className="product-card bg-white rounded-3xl overflow-hidden border border-accent/20 shadow-card flex flex-col group"
+                >
+                  <div className="relative aspect-square bg-accent/10 overflow-hidden">
+                    <AppImage
+                      src={related.image}
+                      alt={related.alt}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                    {related.badge && (
+                      <span
+                        className={`absolute top-3 left-3 text-xs font-bold px-2.5 py-1 rounded-full ${
+                          related.badge === 'Sale' ?'bg-red-500 text-white'
+                            : related.badge === 'New' ?'bg-primary text-white' :'bg-secondary text-primary'
+                        }`}
+                      >
+                        {related.badge}
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-4 flex flex-col flex-1">
+                    <p className="text-muted text-xs mb-1">{related.brand}</p>
+                    <p className="text-primary font-semibold text-sm mb-2 font-display">
+                      {related.name}
+                    </p>
+                    <div className="flex items-center gap-2 mt-auto">
+                      <span className="text-primary font-bold text-base">{related.price}</span>
+                      {related.originalPrice && (
+                        <span className="text-muted text-xs line-through">
+                          {related.originalPrice}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
