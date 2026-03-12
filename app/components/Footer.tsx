@@ -94,6 +94,12 @@ export default function Footer() {
           </p>
 
         </div>
+        {/* Discreet admin entry */}
+        <div className="mt-6 text-center">
+          <Link href="/admin/login" className="text-xs text-muted/40 hover:text-muted/70 transition-colors">
+            Admin
+          </Link>
+        </div>
       </div>
     </footer>
   );
