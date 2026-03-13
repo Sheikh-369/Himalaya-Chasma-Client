@@ -1,32 +1,44 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import AppLogo from '@/app/components/ui/AppLogo';
 
-export default function AdminLoginPage() {
+export default function ResetPasswordPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [form, setForm] = useState({
+    email: '',
+    otp: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError('');
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
-    // Mock admin credentials
+    if (form.newPassword !== form.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (form.newPassword.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+
+    setLoading(true);
     setTimeout(() => {
-      if (email === 'admin@clearvision.com' && password === 'admin123') {
-        localStorage.setItem('admin_authenticated', 'true');
-        router.push('/admin/dashboard');
-      } else {
-        setError('Invalid email or password. Please try again.');
-      }
       setLoading(false);
-    }, 800);
+      router.push('/admin/login');
+    }, 900);
   };
 
   return (
@@ -51,28 +63,63 @@ export default function AdminLoginPage() {
 
         {/* Card */}
         <div className="glass-card-dark rounded-3xl p-8 shadow-deep">
-          <h1 className="font-display text-2xl font-semibold text-white mb-1">Welcome back</h1>
-          <p className="text-white/50 text-sm mb-8">Sign in to manage your store</p>
+          <h1 className="font-display text-2xl font-semibold text-white mb-1">Reset Password</h1>
+          <p className="text-white/50 text-sm mb-8">
+            Enter the OTP sent to your email and set a new password.
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email */}
             <div>
               <label className="block text-sm font-medium text-white/70 mb-2">Email Address</label>
               <input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                name="email"
+                value={form.email}
+                onChange={handleChange}
                 placeholder="admin@clearvision.com"
                 required
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-secondary/60 focus:bg-white/8 transition-all"
               />
             </div>
 
+            {/* OTP */}
             <div>
-              <label className="block text-sm font-medium text-white/70 mb-2">Password</label>
+              <label className="block text-sm font-medium text-white/70 mb-2">OTP Code</label>
+              <input
+                type="text"
+                name="otp"
+                value={form.otp}
+                onChange={handleChange}
+                placeholder="Enter 6-digit OTP"
+                required
+                maxLength={6}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-secondary/60 focus:bg-white/8 transition-all tracking-widest"
+              />
+            </div>
+
+            {/* New Password */}
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-2">New Password</label>
               <input
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                name="newPassword"
+                value={form.newPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+                required
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-secondary/60 focus:bg-white/8 transition-all"
+              />
+            </div>
+
+            {/* Confirm New Password */}
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-2">Confirm New Password</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={form.confirmPassword}
+                onChange={handleChange}
                 placeholder="••••••••"
                 required
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-secondary/60 focus:bg-white/8 transition-all"
@@ -96,25 +143,22 @@ export default function AdminLoginPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Signing in...
+                  Resetting...
                 </span>
-              ) : 'Sign In'}
+              ) : 'Reset Password'}
             </button>
-
-            <div className="text-center">
-              <Link
-                href="/admin/forgot-password"
-                className="text-white/40 hover:text-secondary text-sm transition-colors"
-              >
-                Forgot your password?
-              </Link>
-            </div>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-white/10">
-            <p className="text-white/30 text-xs text-center">
-              Demo credentials: admin@clearvision.com / admin123
-            </p>
+          <div className="mt-6 pt-6 border-t border-white/10 text-center">
+            <Link
+              href="/admin/login"
+              className="text-white/40 hover:text-secondary text-sm transition-colors inline-flex items-center gap-1.5"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Sign In
+            </Link>
           </div>
         </div>
       </div>
