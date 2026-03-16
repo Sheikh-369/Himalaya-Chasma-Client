@@ -1,32 +1,45 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AppLogo from '@/app/components/ui/AppLogo';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks/hooks';
+import { userLogin } from '@/lib/store/auth/auth-slice';
+import { IUserData } from '@/lib/store/auth/auth-slice-type';
+import { Status } from '@/lib/global/type';
+import toast from 'react-hot-toast';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loginData, setLoginData] = useState<IUserData>({
+    userEmail:"",
+    userPassword:""
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const dispatch = useAppDispatch();
+  const { status } = useAppSelector((state) => state.authSlice);
+
+    const handleChange = (
+      e: ChangeEvent<HTMLInputElement>
+    ) => {
+      setLoginData({
+        ...loginData,
+        [e.target.name]: e.target.value,
+      });
+    };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
 
-    // Mock admin credentials
-    setTimeout(() => {
-      if (email === 'admin@clearvision.com' && password === 'admin123') {
-        localStorage.setItem('admin_authenticated', 'true');
-        router.push('/admin/dashboard');
-      } else {
-        setError('Invalid email or password. Please try again.');
-      }
-      setLoading(false);
-    }, 800);
+    const result = await dispatch(userLogin(loginData));
+
+    if (result.success) {
+            toast.success(result.message)
+            router.push("/admin/dashboard");
+        } else {
+            toast.error(result.message)
+        }
   };
 
   return (
@@ -59,9 +72,9 @@ export default function AdminLoginPage() {
               <label className="block text-sm font-medium text-white/70 mb-2">Email Address</label>
               <input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@clearvision.com"
+                name='userEmail'
+                onChange={handleChange}
+                placeholder="admin@himalaya-chasma-ghar.com"
                 required
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-secondary/60 focus:bg-white/8 transition-all"
               />
@@ -71,26 +84,26 @@ export default function AdminLoginPage() {
               <label className="block text-sm font-medium text-white/70 mb-2">Password</label>
               <input
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                name='userPassword'                
+                onChange={handleChange}
                 placeholder="••••••••"
                 required
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-secondary/60 focus:bg-white/8 transition-all"
               />
             </div>
 
-            {error && (
+            {/* {error && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
                 <p className="text-red-400 text-sm">{error}</p>
               </div>
-            )}
+            )} */}
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={status === Status.LOADING}
               className="w-full btn-primary py-3.5 text-base font-semibold rounded-xl disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? (
+              {status === Status.LOADING ? (
                 <span className="flex items-center justify-center gap-2">
                   <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -110,12 +123,6 @@ export default function AdminLoginPage() {
               </Link>
             </div>
           </form>
-
-          <div className="mt-6 pt-6 border-t border-white/10">
-            <p className="text-white/30 text-xs text-center">
-              Demo credentials: admin@clearvision.com / admin123
-            </p>
-          </div>
         </div>
       </div>
     </div>

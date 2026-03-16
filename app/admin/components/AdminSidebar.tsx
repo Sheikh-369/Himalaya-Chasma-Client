@@ -54,7 +54,7 @@ export default function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps)
 
   const handleLogout = () => {
     localStorage.removeItem('admin_authenticated');
-    router.push('/admin/login');
+    router.push('/');
   };
 
   return (

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminSidebar from './AdminSidebar';
+import { useAppSelector } from '@/lib/store/hooks/hooks';
 
 interface AdminLayoutWrapperProps {
   children: React.ReactNode;
@@ -13,15 +14,23 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    const isAuth = localStorage.getItem('admin_authenticated');
-    if (!isAuth) {
-      router.push('/admin/login');
-    }
-  }, [router]);
+const user = useAppSelector(state => state.authSlice.userData[0]);
 
-  if (!mounted) return null;
+useEffect(() => {
+  setMounted(true);
+
+  // If Redux has user, all good
+  if (user) return;
+
+  // fallback to localStorage
+  const storedUser = localStorage.getItem('user');
+  if (!storedUser) {
+    router.push('/admin/login');
+  }
+}, [user, router]);
+
+  if (!mounted) return null; // prevent flicker
+  // if (!user) return null;    // wait until user is confirmed
 
   return (
     <div className="min-h-screen bg-[#0F0F1E] flex">
