@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import AppLogo from '@/app/components/ui/AppLogo';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks/hooks';
+import { setAdmin, setSelectedUser } from '@/lib/store/admin/auth/admin-slice';
 
 interface NavItem {
   label: string;
@@ -22,9 +24,18 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
+    {
+    label: 'Products',
+    href: '/admin/products',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+      </svg>
+    ),
+  },
   {
     label: 'Profile',
-    href: '/admin/profile',
+    href: '#', // handled via onClick
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -49,13 +60,37 @@ interface AdminSidebarProps {
 }
 
 export default function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
+  const dispatch = useAppDispatch();
   const pathname = usePathname();
   const router = useRouter();
+  const selectedUser = useAppSelector((state) => state.adminSlice.selectedUser);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_authenticated');
-    router.push('/');
+  // Fallback to localStorage if Redux user is null
+  const getCurrentUser = () => {
+    if (selectedUser) return selectedUser;
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user');
+      return storedUser ? JSON.parse(storedUser) : null;
+    }
+    return null;
   };
+
+  const goToProfile = () => {
+    const user = getCurrentUser();
+    if (!user) return;
+    router.push(`/admin/profile/${user.id}`);
+    setSidebarOpen(false);
+    onClose();
+  };
+
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  dispatch(setSelectedUser(null)); // clear selected user
+  dispatch(setAdmin([]));          // clear admin list if needed
+  router.push("/");                // redirect safely
+};
 
   return (
     <>
@@ -78,11 +113,10 @@ export default function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps)
           <AppLogo size={36} />
           <div>
             <span className="font-display font-semibold text-lg text-white tracking-tight block leading-tight">
-              ClearVision
+              HimalayaChasmaGhar
             </span>
             <span className="text-secondary text-xs font-sans">Admin Panel</span>
           </div>
-          {/* Mobile close */}
           <button
             onClick={onClose}
             className="ml-auto lg:hidden text-white/40 hover:text-white transition-colors"
@@ -96,16 +130,25 @@ export default function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps)
         {/* Nav */}
         <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = pathname === (typeof item.href === 'string' ? item.href : '');
+
             return (
               <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
+                key={item.label}
+                href={typeof item.href === 'string' ? item.href : '#'}
+                onClick={(e) => {
+                  if (item.label === 'Profile') {
+                    e.preventDefault();
+                    goToProfile();
+                  } else {
+                    onClose();
+                  }
+                }}
                 target={item.external ? '_blank' : undefined}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
                   isActive
-                    ? 'bg-secondary text-primary' :'text-white/60 hover:text-white hover:bg-white/6'
+                    ? 'bg-secondary text-primary'
+                    : 'text-white/60 hover:text-white hover:bg-white/6'
                 }`}
               >
                 <span className={`transition-colors ${isActive ? 'text-primary' : 'text-white/40 group-hover:text-white/80'}`}>

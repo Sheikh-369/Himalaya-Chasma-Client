@@ -4,41 +4,37 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AppLogo from '@/app/components/ui/AppLogo';
+import { IUserData } from '@/lib/store/auth/auth-slice-type';
+import { useAppDispatch } from '@/lib/store/hooks/hooks';
+import { resetPassword } from '@/lib/store/auth/auth-slice';
+import toast from 'react-hot-toast';
+import { Status } from '@/lib/global/type';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const [form, setForm] = useState({
-    email: '',
-    otp: '',
+  const dispatch=useAppDispatch()
+  const [resetPasswordData, setResetPasswordData] = useState<IUserData>({
+    userEmail: '',
+    OTP: '',
     newPassword: '',
-    confirmPassword: '',
+    confirmNewPassword: ''
   });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    setError('');
+    setResetPasswordData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+      const result = await dispatch(resetPassword(resetPasswordData));
 
-    if (form.newPassword !== form.confirmPassword) {
-      setError('Passwords do not match.');
-      return;
+    if (result.success) {
+      toast.success(result.message);
+      router.push("/admin/login");
+    } else {
+      toast.error(result.message);
     }
-    if (form.newPassword.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return;
-    }
-
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      router.push('/admin/login');
-    }, 900);
   };
 
   return (
@@ -74,8 +70,7 @@ export default function ResetPasswordPage() {
               <label className="block text-sm font-medium text-white/70 mb-2">Email Address</label>
               <input
                 type="email"
-                name="email"
-                value={form.email}
+                name="userEmail"
                 onChange={handleChange}
                 placeholder="admin@clearvision.com"
                 required
@@ -88,8 +83,7 @@ export default function ResetPasswordPage() {
               <label className="block text-sm font-medium text-white/70 mb-2">OTP Code</label>
               <input
                 type="text"
-                name="otp"
-                value={form.otp}
+                name="OTP"
                 onChange={handleChange}
                 placeholder="Enter 6-digit OTP"
                 required
@@ -104,7 +98,6 @@ export default function ResetPasswordPage() {
               <input
                 type="password"
                 name="newPassword"
-                value={form.newPassword}
                 onChange={handleChange}
                 placeholder="••••••••"
                 required
@@ -117,27 +110,19 @@ export default function ResetPasswordPage() {
               <label className="block text-sm font-medium text-white/70 mb-2">Confirm New Password</label>
               <input
                 type="password"
-                name="confirmPassword"
-                value={form.confirmPassword}
+                name="confirmNewPassword"
                 onChange={handleChange}
                 placeholder="••••••••"
                 required
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-secondary/60 focus:bg-white/8 transition-all"
               />
             </div>
-
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-                <p className="text-red-400 text-sm">{error}</p>
-              </div>
-            )}
-
             <button
               type="submit"
-              disabled={loading}
+              disabled={status === Status.LOADING}
               className="w-full btn-primary py-3.5 text-base font-semibold rounded-xl disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? (
+              {status===Status.LOADING ? (
                 <span className="flex items-center justify-center gap-2">
                   <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

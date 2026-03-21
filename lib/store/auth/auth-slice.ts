@@ -12,6 +12,11 @@ const initialState:IUserSliceState={
     status:Status.IDLE
 
 }
+// const initialState: IUserSliceState = {
+//   userData: null,
+//   selectedUser: null,
+//   status: Status.IDLE
+// };
 
 const authSlice=createSlice({
     name:"authSlice",

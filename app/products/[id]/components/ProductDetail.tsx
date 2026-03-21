@@ -1,32 +1,15 @@
+//dynamic
 'use client';
 
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import AppIcon from '@/app/components/ui/AppIcon';
 import AppImage from '@/app/components/ui/AppImage';
-
-type Category = 'All' | 'Sunglasses' | 'Prescription' | 'Designer';
-
-interface Product {
-  id: number;
-  name: string;
-  brand: string;
-  category: Category;
-  price: string;
-  originalPrice?: string;
-  badge?: string;
-  image: string;
-  alt: string;
-  rating: number;
-  reviews: number;
-  description: string;
-  features: string[];
-  frameDetails: { label: string; value: string }[];
-}
+import { IProductData } from '@/lib/store/admin/product/product-slice-type';
 
 interface ProductDetailProps {
-  product: Product;
-  relatedProducts: Product[];
+  product: IProductData;
+  relatedProducts: IProductData[];
 }
 
 export default function ProductDetail({ product, relatedProducts }: ProductDetailProps) {
@@ -45,10 +28,14 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
     return () => observer.disconnect();
   }, []);
 
+  // Safely ensure features and frameDetails are arrays
+  const featuresArray = Array.isArray(product.features) ? product.features : [];
+  const frameDetailsArray = Array.isArray(product.frameDetails) ? product.frameDetails : [];
+  const relatedProductsArray = Array.isArray(relatedProducts) ? relatedProducts : [];
+
   return (
     <section ref={sectionRef} className="pt-10 pb-24 lg:pb-32">
       <div className="max-w-8xl mx-auto px-6 lg:px-8">
-
         {/* Breadcrumb */}
         <nav className="reveal flex items-center gap-2 text-sm text-muted mb-10">
           <Link href="/" className="hover:text-secondary transition-colors">Home</Link>
@@ -60,22 +47,26 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
 
         {/* Main Product Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 mb-20">
-
           {/* Image */}
           <div className="reveal">
             <div className="relative aspect-square rounded-3xl overflow-hidden bg-accent/10 border border-accent/20 shadow-card">
-              <AppImage
-                src={product.image}
-                alt={product.alt}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
+              {product.image && typeof product.image === 'string' && (
+                <AppImage
+                  src={product.image}
+                  alt={product.alt || product.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              )}
               {product.badge && (
                 <span
                   className={`absolute top-5 left-5 text-sm font-bold px-3 py-1.5 rounded-full ${
-                    product.badge === 'Sale' ?'bg-red-500 text-white'
-                      : product.badge === 'New' ?'bg-primary text-white' :'bg-secondary text-primary'
+                    product.badge === 'Sale'
+                      ? 'bg-red-500 text-white'
+                      : product.badge === 'New'
+                      ? 'bg-primary text-white'
+                      : 'bg-secondary text-primary'
                   }`}
                 >
                   {product.badge}
@@ -89,7 +80,7 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
             {/* Brand & Category */}
             <div className="flex items-center gap-3 mb-3">
               <span className="text-secondary text-sm font-semibold uppercase tracking-widest">
-                {product.brand}
+                {product.brand || 'Unknown Brand'}
               </span>
               <span className="w-1 h-1 rounded-full bg-accent" />
               <span className="text-muted text-sm">{product.category}</span>
@@ -107,35 +98,29 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
                   <AppIcon
                     key={i}
                     name="StarIcon"
-                    variant={i < product.rating ? 'solid' : 'outline'}
+                    variant={i < (product.rating || 0) ? 'solid' : 'outline'}
                     size={16}
-                    className={i < product.rating ? 'text-secondary' : 'text-accent'}
+                    className={i < (product.rating || 0) ? 'text-secondary' : 'text-accent'}
                   />
                 ))}
               </div>
               <span className="text-muted text-sm">
-                {product.rating}.0 · {product.reviews} reviews
+                {(product.rating || 0).toFixed(1)} · {product.reviews || 0} reviews
               </span>
             </div>
 
             {/* Price */}
             <div className="flex items-baseline gap-3 mb-6">
               <span className="font-display text-4xl text-primary font-semibold">
-                {product.price}
+                Rs.{product.price.toFixed(2)}
               </span>
               {product.originalPrice && (
-                <span className="text-muted text-xl line-through">{product.originalPrice}</span>
+                <span className="text-muted text-xl line-through">Rs.{product.originalPrice.toFixed(2)}</span>
               )}
               {product.originalPrice && (
                 <span className="text-red-500 text-sm font-semibold bg-red-50 px-2 py-0.5 rounded-full">
                   Save{' '}
-                  {Math.round(
-                    ((parseInt(product.originalPrice.replace('$', '')) -
-                      parseInt(product.price.replace('$', ''))) /
-                      parseInt(product.originalPrice.replace('$', ''))) *
-                      100
-                  )}
-                  %
+                  {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
                 </span>
               )}
             </div>
@@ -147,21 +132,23 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
             <p className="text-muted leading-relaxed mb-8">{product.description}</p>
 
             {/* Features */}
-            <div className="mb-8">
-              <h3 className="text-primary font-semibold text-sm uppercase tracking-wider mb-4">
-                Key Features
-              </h3>
-              <ul className="space-y-2.5">
-                {product.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-muted">
-                    <span className="mt-0.5 w-5 h-5 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                      <AppIcon name="CheckIcon" size={11} className="text-secondary" />
-                    </span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {featuresArray.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-primary font-semibold text-sm uppercase tracking-wider mb-4">
+                  Key Features
+                </h3>
+                <ul className="space-y-2.5">
+                  {featuresArray.map((feature, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-muted">
+                      <span className="mt-0.5 w-5 h-5 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                        <AppIcon name="CheckIcon" size={11} className="text-secondary" />
+                      </span>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 mt-auto">
@@ -184,25 +171,24 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
         </div>
 
         {/* Frame Details Table */}
-        <div className="reveal mb-20">
-          <h2 className="font-display text-2xl lg:text-3xl text-primary font-semibold mb-8">
-            Frame Specifications
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {product.frameDetails.map((detail, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl border border-accent/20 p-5 shadow-card"
-              >
-                <p className="text-muted text-xs uppercase tracking-wider mb-1">{detail.label}</p>
-                <p className="text-primary font-semibold text-sm">{detail.value}</p>
-              </div>
-            ))}
+        {frameDetailsArray.length > 0 && (
+          <div className="reveal mb-20">
+            <h2 className="font-display text-2xl lg:text-3xl text-primary font-semibold mb-8">
+              Frame Specifications
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {frameDetailsArray.map((detail, i) => (
+                <div key={i} className="bg-white rounded-2xl border border-accent/20 p-5 shadow-card">
+                  <p className="text-muted text-xs uppercase tracking-wider mb-1">{detail.label}</p>
+                  <p className="text-primary font-semibold text-sm">{detail.value}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Related Products */}
-        {relatedProducts.length > 0 && (
+        {relatedProductsArray.length > 0 && (
           <div className="reveal">
             <div className="flex items-center justify-between mb-8">
               <h2 className="font-display text-2xl lg:text-3xl text-primary font-semibold">
@@ -217,25 +203,30 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
               </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {relatedProducts.map((related) => (
+              {relatedProductsArray.map((related) => (
                 <Link
                   key={related.id}
                   href={`/products/${related.id}`}
                   className="product-card bg-white rounded-3xl overflow-hidden border border-accent/20 shadow-card flex flex-col group"
                 >
                   <div className="relative aspect-square bg-accent/10 overflow-hidden">
-                    <AppImage
-                      src={related.image}
-                      alt={related.alt}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    />
+                    {related.image && typeof related.image === 'string' && (
+                      <AppImage
+                        src={related.image}
+                        alt={related.alt || related.name}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                    )}
                     {related.badge && (
                       <span
                         className={`absolute top-3 left-3 text-xs font-bold px-2.5 py-1 rounded-full ${
-                          related.badge === 'Sale' ?'bg-red-500 text-white'
-                            : related.badge === 'New' ?'bg-primary text-white' :'bg-secondary text-primary'
+                          related.badge === 'Sale'
+                            ? 'bg-red-500 text-white'
+                            : related.badge === 'New'
+                            ? 'bg-primary text-white'
+                            : 'bg-secondary text-primary'
                         }`}
                       >
                         {related.badge}
@@ -244,15 +235,11 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
                   </div>
                   <div className="p-4 flex flex-col flex-1">
                     <p className="text-muted text-xs mb-1">{related.brand}</p>
-                    <p className="text-primary font-semibold text-sm mb-2 font-display">
-                      {related.name}
-                    </p>
+                    <p className="text-primary font-semibold text-sm mb-2 font-display">{related.name}</p>
                     <div className="flex items-center gap-2 mt-auto">
-                      <span className="text-primary font-bold text-base">{related.price}</span>
+                      <span className="text-primary font-bold text-base">Rs.{related.price.toFixed(2)}</span>
                       {related.originalPrice && (
-                        <span className="text-muted text-xs line-through">
-                          {related.originalPrice}
-                        </span>
+                        <span className="text-muted text-xs line-through">Rs.{related.originalPrice.toFixed(2)}</span>
                       )}
                     </div>
                   </div>

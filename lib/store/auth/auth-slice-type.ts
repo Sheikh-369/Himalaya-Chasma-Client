@@ -21,3 +21,8 @@ export interface IUserSliceState{
     selectedUser: IUserData | null; 
     status:Status
 }
+// export interface IUserSliceState {
+//   userData: IUserData[] | null; // allow null
+//   selectedUser: IUserData | null;
+//   status: Status;
+// }
