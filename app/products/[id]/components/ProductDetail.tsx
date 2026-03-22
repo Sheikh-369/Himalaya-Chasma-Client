@@ -153,7 +153,7 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 mt-auto">
               <Link
-                href={`/products/${product.id}/order`}
+                href={`/products/${product.id}/check-out`}
                 className="flex-1 flex items-center justify-center gap-2 bg-secondary text-primary font-semibold py-4 rounded-full hover:bg-[#D4B05A] transition-colors shadow-gold"
               >
                 Order Now
