@@ -25,15 +25,13 @@ const checkOutSlice = createSlice({
 export const { setStatus } = checkOutSlice.actions;
 export default checkOutSlice.reducer;
 
-export function createAnOrder(data: ICheckoutData) {
+export function createAnOrder(data: FormData) {
   return async function (dispatch: AppDispatch) {
     dispatch(setStatus(Status.LOADING));
 
     try {
       const response = await API.post("order", data, {
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       if (response.status === 200 || response.status === 201) {

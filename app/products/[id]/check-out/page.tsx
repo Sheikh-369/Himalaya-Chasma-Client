@@ -206,8 +206,6 @@ export default function CheckOutRedirect() {
     <main className="bg-background min-h-screen">
       <Header/>
       <div className="py-10">
-        {/* 2. Pass 'singleProduct' instead of 'product' */}
-        {/* 3. Cast it as Product to satisfy the Type check */}
         <OrderForm product={singleProduct as unknown as Product} />
       </div>
       <Footer/>
