@@ -9,6 +9,7 @@ import QRModal from './QRModal';
 import { PaymentMethod } from '@/lib/global/type';
 import { useAppDispatch } from '@/lib/store/hooks/hooks';
 import { createAnOrder } from '@/lib/store/check-out/check-out-slice';
+import ValidationModal from './ValidationModal';
 
 const OWNER_WHATSAPP = '9779804971647';
 const DELIVERY_CHARGE = 250;
@@ -66,6 +67,8 @@ export default function OrderForm({ product }: OrderFormProps) {
   }
 ];
 
+  //stoping user for escaping the screenshot of payment
+  const [showValidationModal, setShowValidationModal] = useState(false);
 
   const [showCODModal, setShowCODModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
@@ -109,8 +112,15 @@ export default function OrderForm({ product }: OrderFormProps) {
     return;
   }
 
-  if (form.paymentMethod === PaymentMethod.QR && !paymentProofFile) {
-    alert("Please upload payment screenshot.");
+  // if (form.paymentMethod === PaymentMethod.QR && !paymentProofFile) {
+  //   alert("Please upload payment screenshot.");
+  //   return;
+  // }
+  // Updated Validation
+  const needsFile = form.paymentMethod === PaymentMethod.QR || form.paymentMethod === PaymentMethod.COD;
+  
+  if (needsFile && !paymentProofFile) {
+    setShowValidationModal(true);
     return;
   }
 
@@ -392,47 +402,54 @@ export default function OrderForm({ product }: OrderFormProps) {
                 </div>
               )}
 
-              {form.paymentMethod === PaymentMethod.QR && (
-                  <div>
-                    <label className="block text-xs font-semibold text-red-600 uppercase tracking-wider mb-2">
-                      Upload Payment Screenshot <span className="text-red-500">*</span>
-                    </label>
+              {/* Payment Proof File Inserting Logic */}
 
-                    {/* Hidden input */}
-                    <input
-                      type="file"
-                      id="paymentProof"
-                      name="paymentProof"
-                      onChange={(e) => {
-                        if (e.target.files?.[0]) {
-                          setPaymentProofFile(e.target.files[0]);
-                        }
-                      }}
-                      className="hidden"
-                    />
+              {/* 1. Updated Logic: Show upload UI for both QR and COD */}
+{(form.paymentMethod === PaymentMethod.QR || form.paymentMethod === PaymentMethod.COD) && (
+  <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+    <label className="block text-xs font-semibold text-primary uppercase tracking-wider">
+      {form.paymentMethod === PaymentMethod.QR 
+        ? "Upload Full Payment Screenshot" 
+        : "Upload Delivery Fee Screenshot"} 
+      <span className="text-red-500 ml-1">*</span>
+    </label>
 
-                    {/* Custom UI */}
-                    <label
-                      htmlFor="paymentProof"
-                      className={`flex items-center justify-center gap-2 w-full px-4 py-4 rounded-2xl border-2 cursor-pointer transition-all text-sm ${
-                        errors.paymentProof
-                          ? "border-red-400"
-                          : "border-accent/60 hover:border-secondary bg-white"
-                      }`}
-                    >
-                      <AppIcon name="ArrowUpTrayIcon" size={18} className="text-secondary" />
+    {/* The Hidden File Input */}
+    <input
+      type="file"
+      id="paymentProof"
+      accept="image/*"
+      onChange={(e) => {
+        if (e.target.files?.[0]) {
+          setPaymentProofFile(e.target.files[0]);
+        }
+      }}
+      className="hidden"
+    />
 
-                      <span className="text-primary font-medium">
-                        {paymentProofFile ? paymentProofFile.name : "Choose Screenshot"}
-                      </span>
-                    </label>
+    {/* The Clickable UI Label */}
+    <label
+      htmlFor="paymentProof"
+      className={`flex items-center justify-center gap-3 w-full px-4 py-4 rounded-2xl border-2 cursor-pointer transition-all ${
+        !paymentProofFile 
+          ? "border-dashed border-accent/60 bg-accent/5 hover:border-secondary" 
+          : "border-solid border-secondary bg-secondary/5"
+      }`}
+    >
+      <AppIcon name="ArrowUpTrayIcon" size={20} className="text-secondary" />
+      <span className="text-primary font-medium">
+        {paymentProofFile ? paymentProofFile.name : "Choose Payment Screenshot"}
+      </span>
+    </label>
 
-                    {/* Optional hint */}
-                    <p className="text-xs text-muted mt-2">
-                      Upload your QR payment screenshot (JPG, PNG)
-                    </p>
-                  </div>
-                )}
+    {/* Dynamic Hint Text */}
+    <p className="text-[11px] text-muted leading-relaxed">
+      {form.paymentMethod === PaymentMethod.QR 
+        ? "Please upload proof of the full Rs. " + totalPrice + " payment." 
+        : "For COD, please upload proof of the Rs. 250 delivery charge."}
+    </p>
+  </div>
+)}
 
               {/* Submit */}
               <button
@@ -556,6 +573,12 @@ export default function OrderForm({ product }: OrderFormProps) {
           basePrice={basePrice}
           deliveryCharge={DELIVERY_CHARGE}
           productPrice={product.price}
+        />
+        {/* Validation Modal asking user to upload Qr screenshot*/}
+        <ValidationModal 
+          isOpen={showValidationModal} 
+          onClose={() => setShowValidationModal(false)} 
+          method={form.paymentMethod as 'COD' | 'QR'} 
         />
       </div>
     </>
