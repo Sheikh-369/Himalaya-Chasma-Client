@@ -1,6 +1,5 @@
 
 'use client';
-
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import AppImage from '@/app/components/ui/AppImage';

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AppLogo from '@/app/components/ui/AppLogo';
 import { IUserData } from '@/lib/store/auth/auth-slice-type';
-import { useAppDispatch } from '@/lib/store/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks/hooks';
 import { resetPassword } from '@/lib/store/auth/auth-slice';
 import toast from 'react-hot-toast';
 import { Status } from '@/lib/global/type';
@@ -13,6 +13,7 @@ import { Status } from '@/lib/global/type';
 export default function ResetPasswordPage() {
   const router = useRouter();
   const dispatch=useAppDispatch()
+  const { status } = useAppSelector((state) => state.authSlice);
   const [resetPasswordData, setResetPasswordData] = useState<IUserData>({
     userEmail: '',
     OTP: '',
