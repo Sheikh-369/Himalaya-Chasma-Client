@@ -2,13 +2,12 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useDispatch, useSelector } from 'react-redux';
 import AppImage from '@/app/components/ui/AppImage';
 import AppIcon from '@/app/components/ui/AppIcon';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks/hooks';
 import { Status } from '@/lib/global/type';
-import { fetchAllProducts } from '@/lib/store/admin/product/prodluct-slice';
 import { IProductData } from '@/lib/store/admin/product/product-slice-type';
+import { fetchAllProducts } from '@/lib/store/admin/product/product-slice';
 
 type Category = 'All' | 'Sunglasses' | 'Prescription' | 'Designer';
 

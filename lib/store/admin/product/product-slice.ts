@@ -13,6 +13,7 @@ const initialState: IProductSliceState = {
   singleProduct: null,
   featuredProducts: [],
   status: Status.IDLE,
+  detailStatus: Status.IDLE, // NEW: Specific status for the single page
 };
 
 /* ================= SLICE ================= */
@@ -36,6 +37,11 @@ const productSlice = createSlice({
     setStatus(state, action: PayloadAction<Status>) {
       state.status = action.payload;
     },
+
+    setDetailStatus(state, action: PayloadAction<Status>) {
+      state.detailStatus = action.payload;
+    }
+
   },
 });
 
@@ -44,6 +50,7 @@ export const {
   setSingleProduct,
   setFeaturedProducts,
   setStatus,
+  setDetailStatus
 } = productSlice.actions;
 
 export default productSlice.reducer;
@@ -70,20 +77,37 @@ export function fetchAllProducts() {
 }
 
 // Fetch single product
+// export function fetchProductById(id: string) {
+//   return async function (dispatch: AppDispatch) {
+//     dispatch(setStatus(Status.LOADING));
+//     try {
+//       const response = await API.get(`product/${id}`);
+
+//       if (response.status === 200) {
+//         dispatch(setSingleProduct(response.data.product));
+//         dispatch(setStatus(Status.SUCCESS));
+//       } else {
+//         dispatch(setStatus(Status.ERROR));
+//       }
+//     } catch (error) {
+//       dispatch(setStatus(Status.ERROR));
+//     }
+//   };
+// }
 export function fetchProductById(id: string) {
   return async function (dispatch: AppDispatch) {
-    dispatch(setStatus(Status.LOADING));
+    // Use the specific detailStatus so it's independent
+    dispatch(setDetailStatus(Status.LOADING));
     try {
       const response = await API.get(`product/${id}`);
-
       if (response.status === 200) {
         dispatch(setSingleProduct(response.data.product));
-        dispatch(setStatus(Status.SUCCESS));
+        dispatch(setDetailStatus(Status.SUCCESS));
       } else {
-        dispatch(setStatus(Status.ERROR));
+        dispatch(setDetailStatus(Status.ERROR));
       }
     } catch (error) {
-      dispatch(setStatus(Status.ERROR));
+      dispatch(setDetailStatus(Status.ERROR));
     }
   };
 }

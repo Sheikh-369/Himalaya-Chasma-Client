@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '@/lib/store/hooks/hooks';
-import { fetchProductById } from '@/lib/store/admin/product/prodluct-slice';
+import { fetchProductById } from '@/lib/store/admin/product/product-slice';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import OrderForm from './components/OrderForm';

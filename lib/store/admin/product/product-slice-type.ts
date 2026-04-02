@@ -22,4 +22,5 @@ export interface IProductSliceState {
   singleProduct: IProductData | null;
   featuredProducts: IProductData[];
   status: Status;
+  detailStatus: Status;
 }

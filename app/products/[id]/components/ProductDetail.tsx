@@ -10,6 +10,7 @@ import { IProductData } from '@/lib/store/admin/product/product-slice-type';
 interface ProductDetailProps {
   product: IProductData;
   relatedProducts: IProductData[];
+  isRelatedLoading?: boolean;
 }
 
 export default function ProductDetail({ product, relatedProducts }: ProductDetailProps) {

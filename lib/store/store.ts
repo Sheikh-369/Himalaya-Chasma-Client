@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit"
 import adminSlice from "../store/admin/auth/admin-slice"
 import authSlice from "../store/auth/auth-slice"
-import productSlice from "../store/admin/product/prodluct-slice"
+import productSlice from "./admin/product/product-slice"
 import checkOutSlice from "../store/check-out/check-out-slice"
 import orderSlice from "../store/order/order-slice"
 

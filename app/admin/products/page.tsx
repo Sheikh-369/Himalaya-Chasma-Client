@@ -452,7 +452,7 @@ import React, { useState, useEffect } from 'react';
 import AdminLayoutWrapper from '../components/AdminLayoutWrapper';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks/hooks';
 import { IProductData } from '@/lib/store/admin/product/product-slice-type';
-import { createProduct, deleteProduct, fetchAllProducts, updateProduct } from '@/lib/store/admin/product/prodluct-slice';
+import { createProduct, deleteProduct, fetchAllProducts, updateProduct } from '@/lib/store/admin/product/product-slice';
 import AddProductModal from './components/AddProductModal';
 import UpdateProductModal from './components/UpdateProductModal';
 import DeleteProductModal from './components/DeleteProductModal';
