@@ -141,19 +141,19 @@ export default function ProductsGrid() {
                 </div>
 
                 {/* CTA */}
-                <div className="mt-auto flex gap-2">
+                <div className="mt-auto flex flex-col xl:flex-row gap-2">
                   <Link
                     href={`/products/${product.id}`}
-                    className="flex-1 flex items-center justify-center gap-1.5 border border-primary text-primary text-xs font-semibold py-2.5 rounded-full hover:bg-primary hover:text-white transition-colors"
+                    className="flex-1 flex items-center justify-center text-center border border-primary text-primary text-[10px] sm:text-xs font-semibold py-2 rounded-full hover:bg-primary hover:text-white transition-colors"
                   >
-                    View Details
+                    Details
                   </Link>
                   <Link
                     href="/contact"
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-primary text-white text-xs font-semibold py-2.5 rounded-full hover:bg-dark-card transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1 bg-primary text-white text-[10px] sm:text-xs font-semibold py-2 rounded-full hover:bg-dark-card transition-colors"
                   >
                     Inquire
-                    <AppIcon name="ArrowRightIcon" size={12} className="text-white" />
+                    <AppIcon name="ArrowRightIcon" size={10} className="text-white hidden sm:block" />
                   </Link>
                 </div>
               </div>
