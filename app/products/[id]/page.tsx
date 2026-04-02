@@ -32,9 +32,9 @@ export default function ProductDetailPage() {
   }, [dispatch, products.length]);
 
   // 3. Loading state
-  if (status === Status.LOADING || !singleProduct) {
-    return <div className="p-10">Loading...</div>;
-  }
+  // if (status === Status.LOADING || !singleProduct) {
+  //   return <div className="p-10">Loading...</div>;
+  // }
 
   // 4. Safety
   if (!singleProduct) return notFound();
