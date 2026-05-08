@@ -10,6 +10,15 @@ interface Props {
 
 const categories: IProductData['category'][] = ["Sunglasses", "Prescription", "Designer"];
 
+const DEFAULT_FRAME_DETAILS = [
+  { label: 'Frame Material', value: 'Solid Brass' },
+  { label: 'Lens Width', value: '50mm' },
+  { label: 'Bridge Width', value: '20mm' },
+  { label: 'Temple Length', value: '145mm' },
+  { label: 'Lens Type', value: 'Amber Tinted UV400' },
+  { label: 'Gender', value: 'Unisex' },
+];
+
 export default function AddProductModal({ onClose, onSubmit }: Props) {
   const [form, setForm] = useState<IProductData>({
     name: '',
@@ -24,7 +33,7 @@ export default function AddProductModal({ onClose, onSubmit }: Props) {
     rating: 0,
     reviews: 0,
     features: [],
-    frameDetails: []
+    frameDetails: DEFAULT_FRAME_DETAILS 
   });
 
   const [file, setFile] = useState<File | null>(null);
@@ -36,32 +45,41 @@ export default function AddProductModal({ onClose, onSubmit }: Props) {
     if (['rating', 'reviews', 'price', 'originalPrice'].includes(name)) {
       setForm(prev => ({ ...prev, [name]: Number(value) }));
     } else if (name === 'features') {
-      setForm(prev => ({ ...prev, features: value.split(',').map(f => f.trim()) }));
-    } else if (name === 'frameDetails') {
-      setForm(prev => ({
-        ...prev,
-        frameDetails: value.split(',').map(f => {
-          const [label, val] = f.split(':');
-          return { label: label?.trim() || '', value: val?.trim() || '' };
-        })
-      }));
+      // ✅ We split by comma but do NOT trim here to allow typing spaces
+      setForm(prev => ({ ...prev, features: value.split(',') }));
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
     }
+  };
+
+  const handleFrameDetailChange = (index: number, newValue: string) => {
+    setForm(prev => {
+      const updatedDetails = [...(prev.frameDetails || [])];
+      updatedDetails[index] = { ...updatedDetails[index], value: newValue };
+      return { ...prev, frameDetails: updatedDetails };
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) setFile(e.target.files[0]);
   };
 
-const handleSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-  if (!form.name.trim()) return setError('Product name is required.');
-  if (!form.price || form.price <= 0) return setError('Enter valid price.');
+    if (!form.name.trim()) return setError('Product name is required.');
+    if (!form.price || form.price <= 0) return setError('Enter valid price.');
 
-  onSubmit(form, file || undefined);
-};
+    // ✅ Clean data on submit: trim whitespace and remove empty strings
+    const finalData = {
+      ...form,
+      features: (form.features || [])
+        .map(f => f.trim())
+        .filter(f => f !== "") 
+    };
+
+    onSubmit(finalData, file || undefined);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-black/70 backdrop-blur-sm">
@@ -76,70 +94,65 @@ const handleSubmit = (e: React.FormEvent) => {
         </div>
 
         <form onSubmit={handleSubmit} className="px-5 py-4 space-y-3 text-sm">
-          {error && <p className="text-red-400">{error}</p>}
+          {error && <p className="text-red-400 bg-red-400/10 p-2 rounded-lg text-center">{error}</p>}
 
-          {/* Row 1: name & brand */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label className="block text-white/60 mb-1">Name *</label>
               <input type="text" name="name" value={form.name} onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2" />
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 focus:outline-none focus:border-secondary/50" />
             </div>
             <div>
               <label className="block text-white/60 mb-1">Brand</label>
               <input type="text" name="brand" value={form.brand || ''} onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2" />
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 focus:outline-none focus:border-secondary/50" />
             </div>
           </div>
 
-          {/* Row 2: price, originalPrice, rating */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div>
               <label className="block text-white/60 mb-1">Price *</label>
               <input type="number" name="price" value={form.price} onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2" />
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 focus:outline-none focus:border-secondary/50" />
             </div>
             <div>
               <label className="block text-white/60 mb-1">Original Price</label>
               <input type="number" name="originalPrice" value={form.originalPrice || ''} onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2" />
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 focus:outline-none focus:border-secondary/50" />
             </div>
             <div>
               <label className="block text-white/60 mb-1">Rating</label>
               <input type="number" name="rating" value={form.rating} onChange={handleChange} step={0.1} min={0} max={5}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2" />
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 focus:outline-none focus:border-secondary/50" />
             </div>
           </div>
 
-          {/* Row 3: reviews, category, badge */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div>
               <label className="block text-white/60 mb-1">Reviews</label>
               <input type="number" name="reviews" value={form.reviews} onChange={handleChange} min={0}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2" />
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 focus:outline-none focus:border-secondary/50" />
             </div>
             <div>
               <label className="block text-white/60 mb-1">Category</label>
               <select name="category" value={form.category} onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2">
+                className="w-full bg-[#0F1B35] border border-white/10 text-white rounded-xl px-3 py-2 focus:outline-none focus:border-secondary/50">
                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-white/60 mb-1">Badge</label>
               <input type="text" name="badge" value={form.badge || ''} onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2" />
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 focus:outline-none focus:border-secondary/50" />
             </div>
           </div>
 
-          {/* Row 4: Description */}
           <div>
             <label className="block text-white/60 mb-1">Description</label>
             <textarea name="description" value={form.description} onChange={handleChange} rows={2}
-              className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2" />
+              className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 focus:outline-none focus:border-secondary/50" />
           </div>
 
-          {/* Row 5: Image & Alt */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label className="block text-white/60 mb-1">Image</label>
@@ -148,42 +161,46 @@ const handleSubmit = (e: React.FormEvent) => {
             <div>
               <label className="block text-white/60 mb-1">Alt text</label>
               <input type="text" name="alt" value={form.alt || ''} onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2" />
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 focus:outline-none focus:border-secondary/50" />
             </div>
           </div>
 
-          {/* Row 6: Features & FrameDetails */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="block text-white/60 mb-1">Features (comma-separated)</label>
               <textarea
                 name="features"
-                value={form.features?.join(', ') || ''}
+                // ✅ Changed join to ',' (no space) to prevent auto-spacing issues
+                value={form.features?.join(',') || ''}
                 onChange={handleChange}
                 rows={2}
-                onFocus={(e) => e.currentTarget.rows = 5}   // enlarge on focus
-                onBlur={(e) => e.currentTarget.rows = 2}    // shrink back on blur
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 transition-all duration-200"
+                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 transition-all focus:outline-none focus:border-secondary/50"
               />
             </div>
-            <div>
-              <label className="block text-white/60 mb-1">Frame Details (label:value)</label>
-              <textarea
-                name="frameDetails"
-                value={form.frameDetails?.map(f => `${f.label}:${f.value}`).join(', ') || ''}
-                onChange={handleChange}
-                rows={2}
-                onFocus={(e) => e.currentTarget.rows = 5}   // enlarge on focus
-                onBlur={(e) => e.currentTarget.rows = 2}    // shrink back on blur
-                className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 py-2 transition-all duration-200"
-              />
+
+            <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+              <label className="block text-white/60 mb-3 font-semibold">Frame Specifications</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+                {form.frameDetails?.map((detail, idx) => (
+                  <div key={detail.label} className="space-y-1">
+                    <span className="text-[10px] uppercase tracking-wider text-white/40 ml-1">
+                      {detail.label}
+                    </span>
+                    <input
+                      type="text"
+                      value={detail.value}
+                      onChange={(e) => handleFrameDetailChange(idx, e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 text-white rounded-lg px-3 py-1.5 text-xs focus:border-secondary/50 outline-none transition-colors"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Buttons */}
           <div className="flex gap-2 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 px-3 py-2 rounded-xl border border-white/10 text-white/60 text-sm">Cancel</button>
-            <button type="submit" className="flex-1 px-3 py-2 rounded-xl bg-secondary text-primary text-sm font-semibold">Add Product</button>
+            <button type="button" onClick={onClose} className="flex-1 px-3 py-2 rounded-xl border border-white/10 text-white/60 text-sm hover:bg-white/5 transition-colors">Cancel</button>
+            <button type="submit" className="flex-1 px-3 py-2 rounded-xl bg-secondary text-primary text-sm font-semibold hover:opacity-90 transition-opacity">Add Product</button>
           </div>
         </form>
       </div>

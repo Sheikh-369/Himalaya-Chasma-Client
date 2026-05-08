@@ -97,38 +97,39 @@ const handleLogout = () => {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity duration-300"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full z-50 w-64 bg-primary border-r border-white/8 flex flex-col transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed top-0 left-0 h-full z-50 w-64 xl:w-72 bg-primary border-r border-white/8 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Logo */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-white/8">
+        {/* Logo Section */}
+        <div className="flex items-center gap-3 px-6 py-5 border-b border-white/8 shrink-0">
           <AppLogo size={36} />
-          <div>
-            <span className="font-display font-semibold text-lg text-white tracking-tight block leading-tight">
+          <div className="min-w-0">
+            <span className="font-display font-semibold text-lg text-white tracking-tight block leading-tight truncate">
               HimalayaChasmaGhar
             </span>
             <span className="text-secondary text-xs font-sans">Admin Panel</span>
           </div>
           <button
             onClick={onClose}
-            className="ml-auto lg:hidden text-white/40 hover:text-white transition-colors"
+            className="ml-auto lg:hidden p-1 text-white/40 hover:text-white transition-colors"
+            aria-label="Close menu"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto scrollbar-hide">
           {navItems.map((item) => {
             const isActive = pathname === (typeof item.href === 'string' ? item.href : '');
 
@@ -147,7 +148,7 @@ const handleLogout = () => {
                 target={item.external ? '_blank' : undefined}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${
                   isActive
-                    ? 'bg-secondary text-primary'
+                    ? 'bg-secondary text-primary shadow-lg shadow-secondary/10'
                     : 'text-white/60 hover:text-white hover:bg-white/6'
                 }`}
               >
@@ -165,8 +166,8 @@ const handleLogout = () => {
           })}
         </nav>
 
-        {/* Logout */}
-        <div className="px-3 py-4 border-t border-white/8">
+        {/* Bottom Logout Section */}
+        <div className="px-3 py-4 border-t border-white/8 shrink-0">
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-white/60 hover:text-red-400 hover:bg-red-500/8 transition-all duration-200 group"

@@ -19,54 +19,42 @@ export default function AdminDashboardPage() {
   const dispatch = useAppDispatch();
   const { orders, status } = useAppSelector((state) => state.orderSlice);
 
-// Fetch data on mount
   useEffect(() => {
     dispatch(fetchAllOrders());
   }, [dispatch]);
 
-// FIX: Change 'Order' to 'any' or your 'IOrderData' type for the Modal
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [statusFilter, setStatusFilter] = useState<'All' | OrderStatus>('All');
 
-  // Stats calculation (Using confirmed/cancelled instead of approved/rejected)
-  // Stats calculation
-const totalOrders = orders.length;
-const pendingOrders = orders.filter((o: any) => o.orderStatus === OrderStatus.PENDING).length;
-const confirmedOrders = orders.filter((o: any) => o.orderStatus === OrderStatus.CONFIRMED).length;
-const cancelledOrders = orders.filter((o: any) => o.orderStatus === OrderStatus.CANCELLED).length;
+  const totalOrders = orders.length;
+  const pendingOrders = orders.filter((o: any) => o.orderStatus === OrderStatus.PENDING).length;
+  const confirmedOrders = orders.filter((o: any) => o.orderStatus === OrderStatus.CONFIRMED).length;
+  const cancelledOrders = orders.filter((o: any) => o.orderStatus === OrderStatus.CANCELLED).length;
 
-// Filter logic
-const filteredOrders = statusFilter === 'All' 
-  ? orders 
-  : orders.filter((o: any) => o.orderStatus === statusFilter);
+  const filteredOrders = statusFilter === 'All' 
+    ? orders 
+    : orders.filter((o: any) => o.orderStatus === statusFilter);
 
-  //for keeping delivered orders and active orders separate
   const activeOrders = filteredOrders.filter(
     (o: any) => o.orderStatus !== OrderStatus.DELIVERED
   );
 
-const deliveredOrders = orders.filter(
+  const deliveredOrders = orders.filter(
     (o: any) => o.orderStatus === OrderStatus.DELIVERED
   );
 
-  //to show and hide the delivered orders
   const [showDelivered, setShowDelivered] = useState(false);
 
-  // deleting order concept
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
-  // Handler to delete order
   const handleDeleteOrder = (id: string) => {
     dispatch(deleteOrderById(id));
-    setDeleteOrderId(null); // close modal after dispatch
+    setDeleteOrderId(null); 
   };
 
-  // Change this function in your AdminDashboardPage
-const handleStatusUpdate = (orderId: string, newStatus: any) => {
-  // We use 'any' because the Modal still sends old string types 
-  // while this dashboard expects OrderStatus enum.
-  dispatch(fetchAllOrders()); 
-  setSelectedOrder(null);
-};
+  const handleStatusUpdate = (orderId: string, newStatus: any) => {
+    dispatch(fetchAllOrders()); 
+    setSelectedOrder(null);
+  };
 
   const stats = [
     {
@@ -117,15 +105,15 @@ const handleStatusUpdate = (orderId: string, newStatus: any) => {
 
   return (
     <AdminLayoutWrapper>
-      <div className="space-y-8">
+      <div className="space-y-6 lg:space-y-8">
         {/* Page Header */}
         <div>
           <h1 className="font-display text-2xl lg:text-3xl font-semibold text-white">Dashboard</h1>
           <p className="text-white/40 text-sm mt-1">Manage and track all customer orders</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Stats Cards - Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
             <div
               key={stat.label}
@@ -142,17 +130,15 @@ const handleStatusUpdate = (orderId: string, newStatus: any) => {
           ))}
         </div>
 
-        {/* Active Orders Table */}
+        {/* Active Orders Section */}
         <div className="bg-[#16213E] border border-white/8 rounded-2xl overflow-hidden">
-          {/* Table Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-5 border-b border-white/8">
-            <div>
-              <h2 className="font-display text-lg font-semibold text-white">Active Orders</h2>
-              <p className="text-white/40 text-xs mt-0.5">{filteredOrders.length} orders found</p>
-            </div>
-            {/* Switch button/section */}
-            <div className="flex items-center justify-between px-6 py-4 bg-[#16213E] border-b border-white/8 rounded-t-2xl">
-              {/* <h2 className="text-white font-semibold">Active Orders</h2> */}
+          {/* Table Header Wrapper */}
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 px-6 py-5 border-b border-white/8">
+            <div className="flex items-center justify-between xl:justify-start xl:gap-8">
+              <div>
+                <h2 className="font-display text-lg font-semibold text-white">Active Orders</h2>
+                <p className="text-white/40 text-xs mt-0.5">{activeOrders.length} orders found</p>
+              </div>
               
               <label className="inline-flex items-center cursor-pointer">
                 <span className="mr-2 text-white text-xs">Show Delivered</span>
@@ -168,13 +154,14 @@ const handleStatusUpdate = (orderId: string, newStatus: any) => {
                                 peer-checked:after:translate-x-full" />
               </label>
             </div>
-            {/* Filter */}
-            <div className="flex items-center gap-2 flex-wrap">
+
+            {/* Filter Buttons */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 xl:pb-0 scrollbar-hide">
               {(['All', OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.CANCELLED]).map((f) => (
                 <button
                   key={f}
                   onClick={() => setStatusFilter(f as any)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     statusFilter === f
                       ? 'bg-secondary text-primary' :'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white'
                   }`}
@@ -185,73 +172,60 @@ const handleStatusUpdate = (orderId: string, newStatus: any) => {
             </div>
           </div>
 
-          {/* Active Order Table */}
           {!showDelivered && (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[800px]">
                 <thead>
                   <tr className="border-b border-white/6">
-                    <th className="text-left px-4 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Customer</th>
-                    <th className="text-left px-4 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider hidden md:table-cell">Phone</th>
-                    <th className="text-left px-4 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell">Product</th>
-                    <th className="text-left px-4 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell">Payment</th>
-                    <th className="text-left px-4 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Amount</th>
-                    <th className="text-left px-4 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Status</th>
-                    <th className="text-left px-4 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Actions</th>
+                    <th className="text-left px-6 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Customer</th>
+                    <th className="text-left px-6 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider hidden md:table-cell">Phone</th>
+                    <th className="text-left px-6 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell">Product</th>
+                    <th className="text-left px-6 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell">Payment</th>
+                    <th className="text-left px-6 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Amount</th>
+                    <th className="text-left px-6 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Status</th>
+                    <th className="text-left px-6 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/4">
                   {activeOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-white/2 transition-colors">
-                      <td className="px-4 py-4">
+                      <td className="px-6 py-4">
                         <p className="text-white text-sm font-medium">{order.firstName} {order.lastName}</p>
                         <p className="text-white/30 text-xs mt-0.5">{order.createdAt}</p>
                       </td>
-                      <td className="px-4 py-4 hidden md:table-cell">
+                      <td className="px-6 py-4 hidden md:table-cell">
                         <span className="text-white/60 text-sm">{order.whatsappNumber}</span>
                       </td>
-                      <td className="px-4 py-4 hidden lg:table-cell">
-                        <span className="text-white/70 text-sm">{order.OrderItems?.[0]?.productName || "No Product"}</span>
+                      <td className="px-6 py-4 hidden lg:table-cell">
+                        <span className="text-white/70 text-sm truncate max-w-[150px] block">{order.OrderItems?.[0]?.productName || "No Product"}</span>
                       </td>
-                      <td className="px-4 py-4 hidden lg:table-cell">
+                      <td className="px-6 py-4 hidden lg:table-cell">
                         <span className="text-white/60 text-xs bg-white/6 px-2.5 py-1 rounded-lg">{order.paymentMethod}</span>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-6 py-4">
                         <span className="text-white text-sm font-semibold">Rs. {order.totalAmount}</span>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[order.orderStatus]}`}>
                           {order.orderStatus}
                         </span>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-6 py-4">
                         <div className="flex gap-2 items-center">
-                          {/* View Button */}
                           <button
                             onClick={() => setSelectedOrder(order)}
-                            className="text-secondary hover:text-secondary/80 text-xs font-medium bg-secondary/10 hover:bg-secondary/20 px-3 py-1.5 rounded-lg transition-all flex items-center justify-center"
+                            className="text-secondary hover:text-secondary/80 text-xs font-medium bg-secondary/10 hover:bg-secondary/20 px-3 py-1.5 rounded-lg transition-all"
                           >
                             View
                           </button>
 
-                          {/* Delete Button */}
                           <button
                             onClick={() => setDeleteOrderId(order.id)}
-                            className="px-3 py-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all flex items-center justify-center"
+                            className="px-3 py-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all"
                             title="Delete"
                           >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={2}
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                           </button>
                         </div>
@@ -273,95 +247,75 @@ const handleStatusUpdate = (orderId: string, newStatus: any) => {
       
       {/* Delivered Orders Table */}
       {showDelivered && (
-        <div className="bg-[#16213E] border border-white/8 rounded-2xl overflow-hidden mt-4 animate-slide-down">
+        <div className="bg-[#16213E] border border-white/8 rounded-2xl overflow-hidden mt-6 animate-slide-down">
           <div className="px-6 py-4 border-b border-white/8">
             <h2 className="font-display text-lg font-semibold text-white">Delivered Orders</h2>
             <p className="text-white/40 text-xs mt-0.5">{deliveredOrders.length} delivered orders</p>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[800px]">
               <thead>
                 <tr className="border-b border-white/6">
-                  <th className="text-left px-4 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Customer</th>
-                  <th className="text-left px-4 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider hidden md:table-cell">Phone</th>
-                  <th className="text-left px-4 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell">Product</th>
-                  <th className="text-left px-4 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell">Payment</th>
-                  <th className="text-left px-4 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Amount</th>
-                  <th className="text-left px-4 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Status</th>
-                  <th className="text-left px-4 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Actions</th>
+                  <th className="text-left px-6 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Customer</th>
+                  <th className="text-left px-6 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider hidden md:table-cell">Phone</th>
+                  <th className="text-left px-6 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell">Product</th>
+                  <th className="text-left px-6 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider hidden lg:table-cell">Payment</th>
+                  <th className="text-left px-6 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Amount</th>
+                  <th className="text-left px-6 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Status</th>
+                  <th className="text-left px-6 py-3.5 text-white/40 text-xs font-semibold uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/4">
                 {deliveredOrders.map((order: any) => (
                   <tr key={order.id} className="hover:bg-white/2 transition-colors">
-                    <td className="px-4 py-4">
+                    <td className="px-6 py-4">
                       <p className="text-white text-sm font-medium">{order.firstName} {order.lastName}</p>
                       <p className="text-white/30 text-xs mt-0.5">{order.createdAt}</p>
                     </td>
-                    <td className="px-4 py-4 hidden md:table-cell">
+                    <td className="px-6 py-4 hidden md:table-cell">
                       <span className="text-white/60 text-sm">{order.whatsappNumber}</span>
                     </td>
-                    <td className="px-4 py-4 hidden lg:table-cell">
-                      <span className="text-white/70 text-sm">{order.OrderItems?.[0]?.productName || "No Product"}</span>
+                    <td className="px-6 py-4 hidden lg:table-cell">
+                      <span className="text-white/70 text-sm truncate max-w-[150px] block">{order.OrderItems?.[0]?.productName || "No Product"}</span>
                     </td>
-                    <td className="px-4 py-4 hidden lg:table-cell">
+                    <td className="px-6 py-4 hidden lg:table-cell">
                       <span className="text-white/60 text-xs bg-white/6 px-2.5 py-1 rounded-lg">{order.paymentMethod}</span>
                     </td>
-                    <td className="px-4 py-4">
+                    <td className="px-6 py-4">
                       <span className="text-white text-sm font-semibold">Rs. {order.totalAmount}</span>
                     </td>
-                    <td className="px-4 py-4">
+                    <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[order.orderStatus]}`}>
                         {order.orderStatus}
                       </span>
                     </td>
-                    <td className="px-4 py-4">
-                        <div className="flex gap-2 items-center">
-                          {/* View Button */}
-                          <button
-                            onClick={() => setSelectedOrder(order)}
-                            className="text-secondary hover:text-secondary/80 text-xs font-medium bg-secondary/10 hover:bg-secondary/20 px-3 py-1.5 rounded-lg transition-all flex items-center justify-center"
-                          >
-                            View
-                          </button>
-
-                          {/* Delete Button */}
-                          <button
-                            onClick={() => setDeleteOrderId(order.id)}
-                            className="px-3 py-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all flex items-center justify-center"
-                            title="Delete"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={2}
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                          </button>
-                        </div>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2 items-center">
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className="text-secondary hover:text-secondary/80 text-xs font-medium bg-secondary/10 hover:bg-secondary/20 px-3 py-1.5 rounded-lg transition-all"
+                        >
+                          View
+                        </button>
+                        <button
+                          onClick={() => setDeleteOrderId(order.id)}
+                          className="px-3 py-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-
-            {deliveredOrders.length === 0 && (
-              <div className="text-center py-10 text-white/30 text-sm">No delivered orders yet.</div>
-            )}
           </div>
         </div>
       )}
 
-        
-      {/* Order Detail Modal */}
       {selectedOrder && (
         <OrderDetailModal
           order={selectedOrder}
@@ -369,7 +323,6 @@ const handleStatusUpdate = (orderId: string, newStatus: any) => {
           onStatusUpdate={handleStatusUpdate}
         />
       )}
-      {/* Delete Order Modal */}
       {deleteOrderId && (
           <DeleteOrderModal
             id={deleteOrderId}
@@ -377,7 +330,6 @@ const handleStatusUpdate = (orderId: string, newStatus: any) => {
             onDelete={handleDeleteOrder}
           />
       )}
-      
     </AdminLayoutWrapper>
   );
 }
