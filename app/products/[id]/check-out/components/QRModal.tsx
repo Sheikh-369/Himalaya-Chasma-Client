@@ -1,6 +1,7 @@
 'use client';
 
 import AppIcon from '@/app/components/ui/AppIcon';
+import AppImage from '@/app/components/ui/AppImage';
 
 interface QRModalProps {
   isOpen: boolean;
@@ -49,20 +50,15 @@ export default function QRModal({
 
         {/* QR Code Placeholder */}
         <div className="flex flex-col items-center justify-center bg-accent/20 rounded-2xl p-8 mb-5 border-2 border-dashed border-accent">
-          <div className="w-40 h-40 bg-white rounded-xl flex items-center justify-center border border-accent/40 shadow-card mb-3">
-            <div className="grid grid-cols-5 gap-1 p-2">
-              {Array.from({ length: 25 }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`w-5 h-5 rounded-sm ${
-                    [0,1,2,3,4,5,9,10,14,15,19,20,21,22,23,24,6,12,18].includes(i)
-                      ? 'bg-primary'
-                      : 'bg-white'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
+          {/* Actual QR Code Image */}
+<div className="relative aspect-square w-48 mx-auto mb-5 bg-white rounded-2xl overflow-hidden border border-accent/40 shadow-card">
+  <AppImage 
+    src="/QR.jpeg" 
+    alt="Payment QR Code"
+    fill
+    className="object-contain p-2"
+  />
+</div>
 
           <p className="text-xs text-muted text-center">
             Scan this QR code to pay{' '}
@@ -72,7 +68,7 @@ export default function QRModal({
           </p>
 
           <p className="text-xs text-muted text-center mt-1">
-            (Replace with your actual payment QR)
+            After payment, click "Done, Continue Order" to proceed.
           </p>
         </div>
 

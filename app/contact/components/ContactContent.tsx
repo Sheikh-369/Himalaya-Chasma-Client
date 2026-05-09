@@ -37,9 +37,9 @@ const storeInfo = [
 ];
 
 const socials = [
-  { name: 'Instagram', icon: FaInstagram, href: '#' },
-  { name: 'Facebook', icon: FaFacebookF, href: '#' },
-  { name: 'TikTok', icon: FaTiktok, href: '#' },
+  { name: 'Instagram', icon: FaInstagram, href: 'https://www.instagram.com/monty_anari786?igsh=MXZyMmlwZWc0bDJxeA==' },
+  { name: 'Facebook', icon: FaFacebookF, href: 'https://www.facebook.com/share/1ESiBxbhW3/' },
+  { name: 'TikTok', icon: FaTiktok, href: 'https://www.tiktok.com/@himalayachasmagharbtm?_r=1&_t=ZS-96DN7h8CFaW' },
 ];
 
 export default function ContactContent() {

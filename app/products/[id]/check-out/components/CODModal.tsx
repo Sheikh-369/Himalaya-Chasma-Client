@@ -42,7 +42,7 @@ export default function CODModal({
         {/* QR Code Section */}
         <div className="relative aspect-square w-48 mx-auto mb-6 bg-accent/20 rounded-3xl overflow-hidden border-2 border-dashed border-secondary/40 p-2">
            <AppImage 
-              src="/images/payment/delivery-qr.jpg" // 👈 Replace with your actual path
+              src="/QR.jpeg" // 👈 Replace with your actual path
               alt="Delivery Fee QR Code"
               fill
               className="object-contain rounded-2xl"
