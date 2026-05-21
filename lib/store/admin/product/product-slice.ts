@@ -151,19 +151,62 @@ export function fetchFeaturedProducts() {
 }
 
 // Create product
-export function createProduct(productData: IProductData) {
+// export function createProduct(productData: IProductData) {
+//   return async function (dispatch: AppDispatch) {
+//     dispatch(setStatus(Status.LOADING));
+//     try {
+//       const response = await API.post("product", productData, {
+//         headers: { "Content-Type": "multipart/form-data" },
+//       });
+
+//       if (response.status === 200 || response.status === 201) {
+//         dispatch(setStatus(Status.SUCCESS));
+//         dispatch(fetchAllProducts());
+//       } else {
+//         dispatch(setStatus(Status.ERROR));
+//       }
+//     } catch (error) {
+//       dispatch(setStatus(Status.ERROR));
+//     }
+//   };
+// }
+export function createProduct(productData: IProductData, files?: File[]) {
   return async function (dispatch: AppDispatch) {
     dispatch(setStatus(Status.LOADING));
     try {
-      const response = await API.post("product", productData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const formData = new FormData();
+      
+      formData.append('name', productData.name);
+      formData.append('price', String(productData.price));
+      formData.append('category', productData.category);
+      formData.append('description', productData.description);
+      
+      // ADD THESE MISSING FIELDS:
+      if (productData.brand) formData.append('brand', productData.brand);
+      if (productData.badge) formData.append('badge', productData.badge);
+      if (productData.alt) formData.append('alt', productData.alt);
+      
+      // Handle the null/optional originalPrice
+      if (productData.originalPrice) {
+        formData.append('originalPrice', String(productData.originalPrice));
+      }
 
-      if (response.status === 200 || response.status === 201) {
+      formData.append('rating', String(productData.rating || 0));
+      formData.append('reviews', String(productData.reviews || 0));
+
+      // Stringify JSONB fields
+      formData.append('features', JSON.stringify(productData.features || []));
+      formData.append('frameDetails', JSON.stringify(productData.frameDetails || []));
+
+      // Files
+      if (files && files.length > 0) {
+        files.forEach((file) => formData.append('gallery', file));
+      }
+
+      const response = await APIWITHTOKEN.post("product", formData);
+      if (response.status === 201 || response.status === 200) {
         dispatch(setStatus(Status.SUCCESS));
         dispatch(fetchAllProducts());
-      } else {
-        dispatch(setStatus(Status.ERROR));
       }
     } catch (error) {
       dispatch(setStatus(Status.ERROR));
@@ -172,23 +215,65 @@ export function createProduct(productData: IProductData) {
 }
 
 // Update product
-export function updateProduct(id: string, productData: IProductData) {
+// export function updateProduct(id: string, productData: IProductData) {
+//   return async function (dispatch: AppDispatch) {
+//     dispatch(setStatus(Status.LOADING));
+//     try {
+//       const response = await APIWITHTOKEN.patch(
+//         `product/${id}`,
+//         productData,
+//         {
+//           headers: { "Content-Type": "multipart/form-data" },
+//         }
+//       );
+
+//       if (response.status === 200) {
+//         dispatch(setStatus(Status.SUCCESS));
+//         dispatch(fetchAllProducts());
+//       } else {
+//         dispatch(setStatus(Status.ERROR));
+//       }
+//     } catch (error) {
+//       dispatch(setStatus(Status.ERROR));
+//     }
+//   };
+// }
+export function updateProduct(id: string, productData: IProductData, files?: File[]) {
   return async function (dispatch: AppDispatch) {
     dispatch(setStatus(Status.LOADING));
     try {
-      const response = await APIWITHTOKEN.patch(
-        `product/${id}`,
-        productData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      const formData = new FormData();
+
+      // 1. Append basic fields
+      formData.append('name', productData.name);
+      formData.append('brand', productData.brand || '');
+      formData.append('price', String(productData.price));
+      formData.append('originalPrice', String(productData.originalPrice || ''));
+      formData.append('category', productData.category);
+      formData.append('description', productData.description || '');
+      formData.append('badge', productData.badge || '');
+      formData.append('alt', productData.alt || '');
+      formData.append('rating', String(productData.rating || 0));
+      formData.append('reviews', String(productData.reviews || 0));
+      
+      // 2. Stringify Arrays for Multer
+      formData.append('features', JSON.stringify(productData.features));
+      formData.append('frameDetails', JSON.stringify(productData.frameDetails));
+
+      // 3. Append Files to 'gallery' (The backend picks the first as main)
+      if (files && files.length > 0) {
+        files.forEach((file) => {
+          formData.append('gallery', file);
+        });
+      }
+
+      const response = await APIWITHTOKEN.patch(`product/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       if (response.status === 200) {
         dispatch(setStatus(Status.SUCCESS));
         dispatch(fetchAllProducts());
-      } else {
-        dispatch(setStatus(Status.ERROR));
       }
     } catch (error) {
       dispatch(setStatus(Status.ERROR));

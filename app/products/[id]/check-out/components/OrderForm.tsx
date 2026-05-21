@@ -75,6 +75,7 @@ export default function OrderForm({ product }: OrderFormProps) {
   const [codConfirmed, setCodConfirmed] = useState(false);
   const [errors, setErrors] = useState<Record<string,string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const basePrice = extractPrice(product.price);
   const totalPrice =
@@ -103,76 +104,144 @@ export default function OrderForm({ product }: OrderFormProps) {
   paymentMethod: form.paymentMethod as PaymentMethod, // ← cast here
 };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+//   const handleSubmit = async (e: React.FormEvent) => {
+//   e.preventDefault();
 
-  // 1. Validation
-  if (!form.firstName || !form.whatsappNumber || !form.deliveryAddress || !form.paymentMethod) {
-    alert("Please fill in all required fields.");
-    return;
-  }
+//   // 1. Validation
+//   if (!form.firstName || !form.whatsappNumber || !form.deliveryAddress || !form.paymentMethod) {
+//     alert("Please fill in all required fields.");
+//     return;
+//   }
 
-  // if (form.paymentMethod === PaymentMethod.QR && !paymentProofFile) {
-  //   alert("Please upload payment screenshot.");
-  //   return;
-  // }
-  // Updated Validation
-  const needsFile = form.paymentMethod === PaymentMethod.QR || form.paymentMethod === PaymentMethod.COD;
+//   // if (form.paymentMethod === PaymentMethod.QR && !paymentProofFile) {
+//   //   alert("Please upload payment screenshot.");
+//   //   return;
+//   // }
+//   // Updated Validation
+//   const needsFile = form.paymentMethod === PaymentMethod.QR || form.paymentMethod === PaymentMethod.COD;
   
-  if (needsFile && !paymentProofFile) {
-    setShowValidationModal(true);
-    return;
-  }
+//   if (needsFile && !paymentProofFile) {
+//     setShowValidationModal(true);
+//     return;
+//   }
 
-  try {
-    const formData = new FormData();
+//   try {
+//     const formData = new FormData();
 
-    // 2. Append all text fields
-    formData.append("firstName", form.firstName);
-    formData.append("lastName", form.lastName);
-    formData.append("whatsappNumber", form.whatsappNumber);
-    formData.append("email", form.email || ""); // Ensure it's not undefined
-    formData.append("deliveryAddress", form.deliveryAddress);
-    formData.append("paymentMethod", form.paymentMethod);
+//     // 2. Append all text fields
+//     formData.append("firstName", form.firstName);
+//     formData.append("lastName", form.lastName);
+//     formData.append("whatsappNumber", form.whatsappNumber);
+//     formData.append("email", form.email || ""); // Ensure it's not undefined
+//     formData.append("deliveryAddress", form.deliveryAddress);
+//     formData.append("paymentMethod", form.paymentMethod);
     
-    // 3. Append the missing totalAmount!
-    formData.append("totalAmount", totalPrice.toString());
+//     // 3. Append the missing totalAmount!
+//     formData.append("totalAmount", totalPrice.toString());
 
-    // 4. Items must be stringified
-    formData.append("items", JSON.stringify([
-      {
-        productId: product.id,
-        quantity: 1
-      }
-    ]));
+//     // 4. Items must be stringified
+//     formData.append("items", JSON.stringify([
+//       {
+//         productId: product.id,
+//         quantity: 1
+//       }
+//     ]));
 
-    // 5. Attach file
-    if (paymentProofFile) {
-      // Ensure the key name "paymentProof" matches exactly what your backend expects
-      formData.append("paymentProof", paymentProofFile);
+//     // 5. Attach file
+//     if (paymentProofFile) {
+//       // Ensure the key name "paymentProof" matches exactly what your backend expects
+//       formData.append("paymentProof", paymentProofFile);
+//     }
+
+//     // 6. Dispatch
+//     await dispatch(createAnOrder(formData)) 
+
+//     setSubmitted(true);
+    
+//     // ✅ WhatsApp redirect
+//     const msg = encodeURIComponent(
+//       `🛍️ *NEW ORDER*\n
+//     Name: ${form.firstName} ${form.lastName}
+//     Phone: ${form.whatsappNumber}
+//     Product: ${product.name}
+//     Total: Rs. ${totalPrice}
+//     Payment: ${form.paymentMethod}`
+//     );
+
+//     window.location.href = `https://wa.me/${OWNER_WHATSAPP}?text=${msg}`;
+//   } catch (err) {
+//     console.error("Order Creation Error:", err);
+//     alert("Failed to create order. Please check if the screenshot is valid.");
+//   }
+// };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Validation
+    if (!form.firstName || !form.whatsappNumber || !form.deliveryAddress || !form.paymentMethod) {
+      alert("Please fill in all required fields.");
+      return;
     }
 
-    // 6. Dispatch
-    await dispatch(createAnOrder(formData)) 
-
-    setSubmitted(true);
+    const needsFile = form.paymentMethod === PaymentMethod.QR || form.paymentMethod === PaymentMethod.COD;
     
-    // ✅ WhatsApp redirect
-    const msg = encodeURIComponent(
-      `🛍️ *NEW ORDER*\n
-    Name: ${form.firstName} ${form.lastName}
-    Phone: ${form.whatsappNumber}
-    Product: ${product.name}
-    Total: Rs. ${totalPrice}
-    Payment: ${form.paymentMethod}`
-    );
+    if (needsFile && !paymentProofFile) {
+      setShowValidationModal(true);
+      return;
+    }
 
-    window.location.href = `https://wa.me/${OWNER_WHATSAPP}?text=${msg}`;
-  } catch (err) {
-    console.error("Order Creation Error:", err);
-    alert("Failed to create order. Please check if the screenshot is valid.");
-  }
-};
+    // 🔥 Start processing state here
+    setIsProcessing(true);
+
+    try {
+      const formData = new FormData();
+
+      // 2. Append all text fields
+      formData.append("firstName", form.firstName);
+      formData.append("lastName", form.lastName);
+      formData.append("whatsappNumber", form.whatsappNumber);
+      formData.append("email", form.email || ""); 
+      formData.append("deliveryAddress", form.deliveryAddress);
+      formData.append("paymentMethod", form.paymentMethod);
+      formData.append("totalAmount", totalPrice.toString());
+
+      // 4. Items must be stringified
+      formData.append("items", JSON.stringify([
+        {
+          productId: product.id,
+          quantity: 1
+        }
+      ]));
+
+      // 5. Attach file
+      if (paymentProofFile) {
+        formData.append("paymentProof", paymentProofFile);
+      }
+
+      // 6. Dispatch and wait for the backend response
+      await dispatch(createAnOrder(formData)) // Add .unwrap() if using RTK to catch errors properly
+
+      setSubmitted(true);
+      
+      // ✅ WhatsApp redirect
+      const msg = encodeURIComponent(
+        `🛍️ *NEW ORDER*\n
+Name: ${form.firstName} ${form.lastName}
+Phone: ${form.whatsappNumber}
+Product: ${product.name}
+Total: Rs. ${totalPrice}
+Payment: ${form.paymentMethod}`
+      );
+
+      window.location.href = `https://wa.me/${OWNER_WHATSAPP}?text=${msg}`;
+    } catch (err) {
+      console.error("Order Creation Error:", err);
+      alert("Failed to create order. Please check if the screenshot is valid.");
+    } finally {
+      // 🔥 Turn off processing state when done (or on failure)
+      setIsProcessing(false);
+    }
+  };
 
   if (submitted) {
     return (
@@ -452,12 +521,34 @@ export default function OrderForm({ product }: OrderFormProps) {
 )}
 
               {/* Submit */}
-              <button
+              {/* <button
                 type="submit"
                 className="w-full btn-primary py-4 text-base flex items-center justify-center gap-2"
               >
                 Confirm Order & Notify via WhatsApp
                 <AppIcon name="ArrowRightIcon" size={18} className="text-primary" />
+              </button> */}
+              <button
+                type="submit"
+                disabled={isProcessing}
+                className={`w-full btn-primary py-4 text-base flex items-center justify-center gap-2 transition-all ${
+                  isProcessing ? 'opacity-80 cursor-not-allowed' : ''
+                }`}
+              >
+                {isProcessing ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-current" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Processing Order...
+                  </>
+                ) : (
+                  <>
+                    Confirm Order & Notify via WhatsApp
+                    <AppIcon name="ArrowRightIcon" size={18} className="text-primary" />
+                  </>
+                )}
               </button>
 
               <p className="text-xs text-muted text-center">
@@ -584,3 +675,4 @@ export default function OrderForm({ product }: OrderFormProps) {
     </>
   );
 }
+

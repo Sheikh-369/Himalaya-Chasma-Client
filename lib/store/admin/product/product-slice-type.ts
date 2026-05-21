@@ -10,6 +10,8 @@ export interface IProductData {
   originalPrice?: number | null;
   badge?: string | null;
   image?: File | string | null;
+  // NEW: The 4 images gallery
+  gallery?: (File | string)[];
   alt?: string | null;
   rating?: number;
   reviews?: number;
